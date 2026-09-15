@@ -19,6 +19,5 @@ theme.inject(steps.dynamic_css())
 st.markdown(ui.header(), unsafe_allow_html=True)
 steps.render()
 
-# Música de fondo (arranca en el primer click, sobrevive a los pasos). Va al final para no
-# afectar el layout; el player real se inyecta en el documento padre.
-music.background(content.MUSIC_VIDEO_ID, content.MUSIC_START_SECONDS)
+# Música de fondo en playlist aleatoria (sobrevive a los pasos).
+music.background(content.PLAYLIST)

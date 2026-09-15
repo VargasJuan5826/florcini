@@ -25,26 +25,42 @@ import streamlit.components.v1 as components
 # Corre en el documento PADRE (lo inyecta el bootstrap). `window` es la ventana principal.
 _PARENT_SCRIPT = r"""
 (function () {
-  var VIDEO_ID = "__VIDEO_ID__";
-  var START_SECONDS = __START_SECONDS__;
-  var state = { ready: false, started: false, muted: false, want: false, seeking: false, player: null };
+  var PLAYLIST = __PLAYLIST_JSON__;
+  if (!PLAYLIST || !PLAYLIST.length) {
+    PLAYLIST = [{ id: "odouCACH9-w", start: 1714, title: "Eurodance Nostalgia" }];
+  }
+
+  // Cada vez que se abre la app, se elige un tema al azar
+  var currentIndex = Math.floor(Math.random() * PLAYLIST.length);
+  var currentTrack = PLAYLIST[currentIndex];
+
+  var state = {
+    ready: false,
+    started: false,
+    muted: false,
+    want: false,
+    seeking: false,
+    player: null,
+    currentIndex: currentIndex,
+    playlist: PLAYLIST
+  };
   window.__floraMusic = state;
 
-  // Estilos de la barra (el thumb del range necesita hoja de estilos, no inline). También
-  // deja aire abajo del contenido para que la barra no tape el último botón.
+  // Estilos de la barra
   var css = document.createElement('style');
   css.textContent =
-    // Barra full-width pegada arriba (tipo header de la web), no un pill flotante.
     '#flora-music-bar{position:fixed;top:0;left:0;right:0;width:100%;z-index:9998;' +
     'background:#ffffff;border-bottom:1px solid #ece9fb;box-shadow:0 2px 10px rgba(124,58,237,0.10);' +
     "font-family:'Nunito',sans-serif;box-sizing:border-box;}" +
-    // Los controles se alinean en la misma columna de 560px que el resto de la app.
     '#flora-music-inner{max-width:560px;margin:0 auto;display:flex;align-items:center;gap:10px;' +
     'padding:8px 14px;box-sizing:border-box;}' +
     '#flora-music-bar button{border:none;background:none;cursor:pointer;padding:0;color:#5b21b6;' +
-    'display:flex;align-items:center;justify-content:center;line-height:1;}' +
+    'display:flex;align-items:center;justify-content:center;line-height:1;' +
+    'transition:transform 0.15s ease, color 0.15s ease;}' +
     '#flora-music-play{width:30px;height:30px;border-radius:50%;flex:0 0 auto;' +
     'background:linear-gradient(135deg,#7c3aed,#ec4899)!important;color:#fff!important;font-size:14px;}' +
+    '#flora-music-prev,#flora-music-next{width:24px;height:24px;flex:0 0 auto;color:#7c3aed;font-size:13px;opacity:0.85;}' +
+    '#flora-music-prev:hover,#flora-music-next:hover{opacity:1;transform:scale(1.15);color:#5b21b6;}' +
     '#flora-music-mute{font-size:16px;flex:0 0 auto;}' +
     '#flora-music-bar .flora-t{font-size:10px;color:#6b7280;font-variant-numeric:tabular-nums;flex:0 0 auto;min-width:28px;text-align:center;}' +
     '#flora-music-seek{-webkit-appearance:none;appearance:none;flex:1 1 auto;height:4px;border-radius:2px;' +
@@ -55,8 +71,7 @@ _PARENT_SCRIPT = r"""
     '[data-testid="stAppViewContainer"] [data-testid="stMainBlockContainer"]{padding-top:60px!important;}';
   document.head.appendChild(css);
 
-  // Host para el player de YouTube: debe tener dimensiones reales (200x200) y estar
-  // en viewport con opacidad casi nula para que YouTube y los navegadores no suspendan el iframe.
+  // Host para el player de YouTube
   var host = document.createElement('div');
   host.id = 'flora-yt-host';
   host.style.cssText = 'position:fixed;bottom:0;right:0;width:200px;height:200px;opacity:0.001;pointer-events:none;z-index:-9999;';
@@ -65,12 +80,14 @@ _PARENT_SCRIPT = r"""
   host.appendChild(slot);
   document.body.appendChild(host);
 
-  // Barra de reproductor.
+  // Barra de reproductor con Anterior y Siguiente
   var bar = document.createElement('div');
   bar.id = 'flora-music-bar';
   bar.innerHTML =
     '<div id="flora-music-inner">' +
+    '<button id="flora-music-prev" type="button" aria-label="Anterior" title="Tema anterior">⏮</button>' +
     '<button id="flora-music-play" type="button" aria-label="Play/Pausa">▶</button>' +
+    '<button id="flora-music-next" type="button" aria-label="Siguiente" title="Siguiente tema">⏭</button>' +
     '<span class="flora-t" id="flora-music-cur">0:00</span>' +
     '<input id="flora-music-seek" type="range" min="0" max="100" value="0" step="0.1" aria-label="Adelantar">' +
     '<span class="flora-t" id="flora-music-dur">0:00</span>' +
@@ -79,6 +96,8 @@ _PARENT_SCRIPT = r"""
   document.body.appendChild(bar);
 
   var playBtn = document.getElementById('flora-music-play');
+  var prevBtn = document.getElementById('flora-music-prev');
+  var nextBtn = document.getElementById('flora-music-next');
   var muteBtn = document.getElementById('flora-music-mute');
   var seek = document.getElementById('flora-music-seek');
   var curEl = document.getElementById('flora-music-cur');
@@ -112,6 +131,34 @@ _PARENT_SCRIPT = r"""
     muteBtn.textContent = state.muted ? '🔇' : '🔊';
   }
 
+  function loadTrack(idx) {
+    if (idx < 0) idx = PLAYLIST.length - 1;
+    if (idx >= PLAYLIST.length) idx = 0;
+    currentIndex = idx;
+    currentTrack = PLAYLIST[currentIndex];
+    state.currentIndex = currentIndex;
+    seek.value = 0;
+    curEl.textContent = '0:00';
+    if (state.player && typeof state.player.loadVideoById === 'function') {
+      try {
+        state.player.loadVideoById({
+          videoId: currentTrack.id,
+          startSeconds: currentTrack.start || 0
+        });
+        state.player.playVideo();
+        state.player.unMute();
+      } catch (e) {}
+    }
+  }
+
+  function nextTrack() {
+    loadTrack(currentIndex + 1);
+  }
+
+  function prevTrack() {
+    loadTrack(currentIndex - 1);
+  }
+
   playBtn.addEventListener('click', function (e) {
     e.stopPropagation();
     if (!state.player) return;
@@ -124,9 +171,11 @@ _PARENT_SCRIPT = r"""
       }
     } catch (e2) {}
   });
+  prevBtn.addEventListener('click', function (e) { e.stopPropagation(); prevTrack(); });
+  nextBtn.addEventListener('click', function (e) { e.stopPropagation(); nextTrack(); });
   muteBtn.addEventListener('click', function (e) { e.stopPropagation(); toggleMute(); });
 
-  // Scrubbear / adelantar.
+  // Scrubbear / adelantar
   seek.addEventListener('input', function () { state.seeking = true; curEl.textContent = fmt(seek.value); });
   var commitSeek = function () {
     var v = parseFloat(seek.value);
@@ -171,7 +220,7 @@ _PARENT_SCRIPT = r"""
   // API de YouTube (en el documento padre).
   function makePlayer() {
     state.player = new window.YT.Player('flora-yt-player', {
-      videoId: VIDEO_ID,
+      videoId: currentTrack.id,
       playerVars: {
         autoplay: 1,
         mute: 1,
@@ -181,14 +230,14 @@ _PARENT_SCRIPT = r"""
         rel: 0,
         fs: 0,
         disablekb: 1,
-        start: START_SECONDS,
+        start: currentTrack.start || 0,
         origin: window.location.origin
       },
       events: {
         onReady: function () {
           state.ready = true;
-          if (START_SECONDS > 0) {
-            try { state.player.seekTo(START_SECONDS, true); } catch (e) {}
+          if (currentTrack.start > 0) {
+            try { state.player.seekTo(currentTrack.start, true); } catch (e) {}
           }
           // Reproducir inmediatamente
           try {
@@ -211,7 +260,8 @@ _PARENT_SCRIPT = r"""
           } else if (ev.data === window.YT.PlayerState.PAUSED) {
             playBtn.textContent = '▶';
           } else if (ev.data === window.YT.PlayerState.ENDED) {
-            try { ev.target.seekTo(START_SECONDS, true); ev.target.playVideo(); } catch (e) {}
+            // Al terminar el tema, salta automáticamente al siguiente
+            nextTrack();
           }
         }
       }
@@ -242,31 +292,18 @@ _BOOTSTRAP = r"""
   try { pdoc = window.parent.document; pwin = window.parent; } catch (e) { return; }
   if (!pdoc || !pdoc.body) return;
 
-  var SCRIPT_VER = 4;
+  var SCRIPT_VER = 5;
   if (pwin.__floraMusicInjected && pwin.__floraMusicVersion === SCRIPT_VER) {
     if (pwin.__floraMusic && pwin.__floraMusic.player && typeof pwin.__floraMusic.player.playVideo === 'function') {
-      if (pwin.__floraMusicVideoId !== "__VIDEO_ID__" || pwin.__floraMusicStartSeconds !== __START_SECONDS__) {
-        pwin.__floraMusicVideoId = "__VIDEO_ID__";
-        pwin.__floraMusicStartSeconds = __START_SECONDS__;
-        try {
-          pwin.__floraMusic.player.loadVideoById({
-            videoId: "__VIDEO_ID__",
-            startSeconds: __START_SECONDS__
-          });
-          pwin.__floraMusic.player.playVideo();
-          pwin.__floraMusic.player.unMute();
-        } catch (e) {}
-      } else {
-        try {
-          pwin.__floraMusic.player.playVideo();
-          pwin.__floraMusic.player.unMute();
-        } catch (e) {}
-      }
+      try {
+        pwin.__floraMusic.player.playVideo();
+        pwin.__floraMusic.player.unMute();
+      } catch (e) {}
     }
     return;
   }
 
-  // Si existían elementos de una versión previa, limpiarlos para cargar limpio
+  // Limpiar elementos de versión previa
   var oldBar = pdoc.getElementById('flora-music-bar');
   if (oldBar) oldBar.remove();
   var oldHost = pdoc.getElementById('flora-yt-host');
@@ -274,8 +311,6 @@ _BOOTSTRAP = r"""
 
   pwin.__floraMusicInjected = true;
   pwin.__floraMusicVersion = SCRIPT_VER;
-  pwin.__floraMusicVideoId = "__VIDEO_ID__";
-  pwin.__floraMusicStartSeconds = __START_SECONDS__;
   var s = pdoc.createElement('script');
   s.textContent = __PARENT_SCRIPT__;
   pdoc.body.appendChild(s);
@@ -284,20 +319,22 @@ _BOOTSTRAP = r"""
 """
 
 
-def background(video_id: str, start_seconds: int = 0) -> None:
-    """Monta (una sola vez) la música de fondo en loop con una barra de reproductor propia."""
+def background(playlist_or_id: list[dict] | str, start_seconds: int = 0) -> None:
+    """Monta (una sola vez) la música de fondo en playlist con selección aleatoria al abrir."""
+    if isinstance(playlist_or_id, str):
+        playlist = [{"id": playlist_or_id, "start": start_seconds, "title": "Track 1"}]
+    else:
+        playlist = playlist_or_id
+
+    playlist_json = json.dumps(playlist)
     parent = (
         _PARENT_SCRIPT
-        .replace("__VIDEO_ID__", video_id)
-        .replace("__START_SECONDS__", str(start_seconds))
+        .replace("__PLAYLIST_JSON__", playlist_json)
     )
-    # `parent` viaja como literal de string JS; escapamos "</" para que ningún fragmento
-    # pueda cerrar el <script> del bootstrap al parsear el HTML.
     literal = json.dumps(parent).replace("</", "<\\/")
     bootstrap = (
         _BOOTSTRAP
         .replace("__PARENT_SCRIPT__", literal)
-        .replace("__VIDEO_ID__", video_id)
-        .replace("__START_SECONDS__", str(start_seconds))
     )
     components.html(bootstrap, height=0)
+
