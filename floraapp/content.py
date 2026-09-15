@@ -2,7 +2,7 @@
 
 RANK_SEASON = "Temporada 1"
 RANK_TITLE = "Rango Actual :"
-RANK_NAME = "Conocido I"
+RANK_NAME = "Chico extraño I"
 RANK_HINT = "Elegí una misión para ganar experiencia"
 BASE_EXP = 35
 RANK_ICON = "bronce-1.jpg"

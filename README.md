@@ -4,7 +4,7 @@ Propuesta de plancito casual interactiva con michis y onda gamer en Streamlit.
 
 ## Características
 
-- 🎮 **HUD de Rango Gamer**: Indicador de rango de videojuego (*Rango Actual: Conocido 1* con ícono y barra de EXP animada).
+- 🎮 **HUD de Rango Gamer**: Indicador de rango de videojuego (*Rango Actual: Chico extraño I* con ícono y barra de EXP animada).
 - 🕹️ **Opciones de Plancito con Puntos de EXP**:
   - 🚶 Salir a caminar +20 pts
   - 🍻 Salir a tomar algo +30 pts

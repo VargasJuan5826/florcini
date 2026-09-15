@@ -54,7 +54,7 @@ def card(answers: dict) -> str:
             🎮 Ticket de Plancito: Flora
           </div>
           <div style="font-size:10px;color:#6b7280;margin:0 0 18px">
-            // misión_coordinada_v1.0 · Rango: Conocido I
+            // misión_coordinada_v1.0 · Rango: Chico extraño I
           </div>
         </div>
         <div style="padding:0 20px 20px">
