@@ -1,6 +1,6 @@
 # Flora — ¿Sale plancito? 🎮
 
-Propuesta de plancito casual interactiva con michis y onda gamer en Streamlit.
+Propuesta de plancito casual interactiva con michis en Streamlit.
 
 ## Características
 
