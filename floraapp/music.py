@@ -55,11 +55,11 @@ _PARENT_SCRIPT = r"""
     '[data-testid="stAppViewContainer"] [data-testid="stMainBlockContainer"]{padding-top:60px!important;}';
   document.head.appendChild(css);
 
-  // Host oculto para el player de YouTube. Colgado de <body> (fuera del root de Streamlit),
-  // así los reruns no lo tocan.
+  // Host para el player de YouTube: debe tener dimensiones reales (200x200) y estar
+  // en viewport con opacidad casi nula para que YouTube y los navegadores no suspendan el iframe.
   var host = document.createElement('div');
   host.id = 'flora-yt-host';
-  host.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;overflow:hidden;';
+  host.style.cssText = 'position:fixed;bottom:0;right:0;width:200px;height:200px;opacity:0.001;pointer-events:none;z-index:-9999;';
   var slot = document.createElement('div');
   slot.id = 'flora-yt-player';
   host.appendChild(slot);
@@ -97,13 +97,12 @@ _PARENT_SCRIPT = r"""
   function start() {
     if (!state.player || !state.ready) { state.want = true; return; }
     try {
+      state.player.playVideo();
       state.player.unMute();
       state.player.setVolume(50);
-      if (START_SECONDS > 0 && !state.started) {
-        state.player.seekTo(START_SECONDS, true);
-      }
-      state.player.playVideo();
       state.started = true;
+      state.muted = false;
+      muteBtn.textContent = '🔊';
     } catch (e) {}
   }
   function toggleMute() {
@@ -133,17 +132,13 @@ _PARENT_SCRIPT = r"""
     var v = parseFloat(seek.value);
     try { state.player.seekTo(v, true); } catch (e) {}
     curEl.textContent = fmt(v);
-    // Mantené "seeking" un toque más: seekTo() es async y getCurrentTime() todavía
-    // devuelve la posición vieja por un instante; sin esto el loop volvería el slider
-    // hacia atrás apenas lo soltás (parece que "se mueve solo").
     setTimeout(function () { state.seeking = false; }, 800);
   };
   seek.addEventListener('change', commitSeek);
   seek.addEventListener('pointerup', commitSeek);
   seek.addEventListener('click', function (e) { e.stopPropagation(); });
 
-  // Refresco de la barra (a menos que se esté arrastrando). Sólo actualiza con valores
-  // sanos, así un valor transitorio raro del player no hace saltar el slider.
+  // Refresco de la barra
   setInterval(function () {
     if (!state.player || !state.ready) return;
     try {
@@ -157,27 +152,37 @@ _PARENT_SCRIPT = r"""
     } catch (e) {}
   }, 400);
 
-  // Iniciar en play inmediatamente. Si la política del navegador exige interacción de usuario,
-  // el primer click/tap en cualquier lado desbloquea el audio de inmediato.
-  var onFirstGesture = function () {
-    start();
+  // Desmutear con cualquier interacción si el navegador requirió gesto previo
+  var unlockSound = function () {
+    if (!state.player) return;
     try {
-      if (state.player) {
-        state.player.unMute();
-        state.player.playVideo();
-      }
+      state.player.unMute();
+      state.player.setVolume(50);
+      state.player.playVideo();
+      state.muted = false;
+      muteBtn.textContent = '🔊';
     } catch (e) {}
   };
-  document.addEventListener('click', onFirstGesture, true);
-  document.addEventListener('touchstart', onFirstGesture, true);
-  document.addEventListener('pointerdown', onFirstGesture, true);
+  ['click', 'touchstart', 'touchend', 'pointerdown', 'mousedown', 'keydown'].forEach(function (ev) {
+    document.addEventListener(ev, unlockSound, { capture: true, passive: true });
+    window.addEventListener(ev, unlockSound, { capture: true, passive: true });
+  });
 
   // API de YouTube (en el documento padre).
   function makePlayer() {
     state.player = new window.YT.Player('flora-yt-player', {
       videoId: VIDEO_ID,
       playerVars: {
-        autoplay: 1, controls: 0, playsinline: 1, modestbranding: 1, rel: 0, fs: 0, disablekb: 1, start: START_SECONDS
+        autoplay: 1,
+        mute: 1,
+        controls: 0,
+        playsinline: 1,
+        modestbranding: 1,
+        rel: 0,
+        fs: 0,
+        disablekb: 1,
+        start: START_SECONDS,
+        origin: window.location.origin
       },
       events: {
         onReady: function () {
@@ -185,11 +190,27 @@ _PARENT_SCRIPT = r"""
           if (START_SECONDS > 0) {
             try { state.player.seekTo(START_SECONDS, true); } catch (e) {}
           }
-          start();
+          // Reproducir inmediatamente
+          try {
+            state.player.playVideo();
+          } catch (e) {}
+          // Intentar desmutear de una
+          try {
+            state.player.unMute();
+            state.player.setVolume(50);
+            if (!state.player.isMuted()) {
+              state.muted = false;
+              muteBtn.textContent = '🔊';
+            }
+          } catch (e) {}
         },
         onStateChange: function (ev) {
-          // Loop propio (sin playlist): al terminar, vuelve a empezar en START_SECONDS.
-          if (ev.data === window.YT.PlayerState.ENDED) {
+          if (ev.data === window.YT.PlayerState.PLAYING) {
+            state.started = true;
+            playBtn.textContent = '⏸';
+          } else if (ev.data === window.YT.PlayerState.PAUSED) {
+            playBtn.textContent = '▶';
+          } else if (ev.data === window.YT.PlayerState.ENDED) {
             try { ev.target.seekTo(START_SECONDS, true); ev.target.playVideo(); } catch (e) {}
           }
         }
@@ -220,8 +241,10 @@ _BOOTSTRAP = r"""
   var pdoc, pwin;
   try { pdoc = window.parent.document; pwin = window.parent; } catch (e) { return; }
   if (!pdoc || !pdoc.body) return;
-  if (pwin.__floraMusicInjected) {
-    if (pwin.__floraMusic && pwin.__floraMusic.player && typeof pwin.__floraMusic.player.loadVideoById === 'function') {
+
+  var SCRIPT_VER = 3;
+  if (pwin.__floraMusicInjected && pwin.__floraMusicVersion === SCRIPT_VER) {
+    if (pwin.__floraMusic && pwin.__floraMusic.player && typeof pwin.__floraMusic.player.playVideo === 'function') {
       if (pwin.__floraMusicVideoId !== "__VIDEO_ID__") {
         pwin.__floraMusicVideoId = "__VIDEO_ID__";
         try {
@@ -230,12 +253,26 @@ _BOOTSTRAP = r"""
             startSeconds: __START_SECONDS__
           });
           pwin.__floraMusic.player.playVideo();
+          pwin.__floraMusic.player.unMute();
+        } catch (e) {}
+      } else {
+        try {
+          pwin.__floraMusic.player.playVideo();
+          pwin.__floraMusic.player.unMute();
         } catch (e) {}
       }
     }
     return;
   }
+
+  // Si existían elementos de una versión previa, limpiarlos para cargar limpio
+  var oldBar = pdoc.getElementById('flora-music-bar');
+  if (oldBar) oldBar.remove();
+  var oldHost = pdoc.getElementById('flora-yt-host');
+  if (oldHost) oldHost.remove();
+
   pwin.__floraMusicInjected = true;
+  pwin.__floraMusicVersion = SCRIPT_VER;
   pwin.__floraMusicVideoId = "__VIDEO_ID__";
   var s = pdoc.createElement('script');
   s.textContent = __PARENT_SCRIPT__;
