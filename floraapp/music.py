@@ -96,15 +96,14 @@ _PARENT_SCRIPT = r"""
 
   function start() {
     if (!state.player || !state.ready) { state.want = true; return; }
-    if (state.started) return;
-    state.started = true;
     try {
       state.player.unMute();
-      state.player.setVolume(45);
-      if (START_SECONDS > 0) {
+      state.player.setVolume(50);
+      if (START_SECONDS > 0 && !state.started) {
         state.player.seekTo(START_SECONDS, true);
       }
       state.player.playVideo();
+      state.started = true;
     } catch (e) {}
   }
   function toggleMute() {
@@ -117,8 +116,14 @@ _PARENT_SCRIPT = r"""
   playBtn.addEventListener('click', function (e) {
     e.stopPropagation();
     if (!state.player) return;
-    if (!state.started) { start(); return; }
-    try { if (isPlaying()) state.player.pauseVideo(); else state.player.playVideo(); } catch (e2) {}
+    try {
+      if (isPlaying()) {
+        state.player.pauseVideo();
+      } else {
+        start();
+        state.player.playVideo();
+      }
+    } catch (e2) {}
   });
   muteBtn.addEventListener('click', function (e) { e.stopPropagation(); toggleMute(); });
 
@@ -152,24 +157,27 @@ _PARENT_SCRIPT = r"""
     } catch (e) {}
   }, 400);
 
-  // El primer gesto del usuario en cualquier lado (el click de "INICIAR") arranca la
-  // música con sonido. No frena la propagación, así el botón sigue funcionando normal.
+  // Iniciar en play inmediatamente. Si la política del navegador exige interacción de usuario,
+  // el primer click/tap en cualquier lado desbloquea el audio de inmediato.
   var onFirstGesture = function () {
     start();
-    if (state.started || state.want) {
-      document.removeEventListener('click', onFirstGesture, true);
-      document.removeEventListener('touchend', onFirstGesture, true);
-    }
+    try {
+      if (state.player) {
+        state.player.unMute();
+        state.player.playVideo();
+      }
+    } catch (e) {}
   };
   document.addEventListener('click', onFirstGesture, true);
-  document.addEventListener('touchend', onFirstGesture, true);
+  document.addEventListener('touchstart', onFirstGesture, true);
+  document.addEventListener('pointerdown', onFirstGesture, true);
 
   // API de YouTube (en el documento padre).
   function makePlayer() {
     state.player = new window.YT.Player('flora-yt-player', {
       videoId: VIDEO_ID,
       playerVars: {
-        autoplay: 0, controls: 0, playsinline: 1, modestbranding: 1, rel: 0, fs: 0, disablekb: 1, start: START_SECONDS
+        autoplay: 1, controls: 0, playsinline: 1, modestbranding: 1, rel: 0, fs: 0, disablekb: 1, start: START_SECONDS
       },
       events: {
         onReady: function () {
@@ -177,7 +185,7 @@ _PARENT_SCRIPT = r"""
           if (START_SECONDS > 0) {
             try { state.player.seekTo(START_SECONDS, true); } catch (e) {}
           }
-          if (state.want) start();
+          start();
         },
         onStateChange: function (ev) {
           // Loop propio (sin playlist): al terminar, vuelve a empezar en START_SECONDS.
@@ -221,6 +229,7 @@ _BOOTSTRAP = r"""
             videoId: "__VIDEO_ID__",
             startSeconds: __START_SECONDS__
           });
+          pwin.__floraMusic.player.playVideo();
         } catch (e) {}
       }
     }
