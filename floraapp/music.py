@@ -242,11 +242,12 @@ _BOOTSTRAP = r"""
   try { pdoc = window.parent.document; pwin = window.parent; } catch (e) { return; }
   if (!pdoc || !pdoc.body) return;
 
-  var SCRIPT_VER = 3;
+  var SCRIPT_VER = 4;
   if (pwin.__floraMusicInjected && pwin.__floraMusicVersion === SCRIPT_VER) {
     if (pwin.__floraMusic && pwin.__floraMusic.player && typeof pwin.__floraMusic.player.playVideo === 'function') {
-      if (pwin.__floraMusicVideoId !== "__VIDEO_ID__") {
+      if (pwin.__floraMusicVideoId !== "__VIDEO_ID__" || pwin.__floraMusicStartSeconds !== __START_SECONDS__) {
         pwin.__floraMusicVideoId = "__VIDEO_ID__";
+        pwin.__floraMusicStartSeconds = __START_SECONDS__;
         try {
           pwin.__floraMusic.player.loadVideoById({
             videoId: "__VIDEO_ID__",
@@ -274,6 +275,7 @@ _BOOTSTRAP = r"""
   pwin.__floraMusicInjected = true;
   pwin.__floraMusicVersion = SCRIPT_VER;
   pwin.__floraMusicVideoId = "__VIDEO_ID__";
+  pwin.__floraMusicStartSeconds = __START_SECONDS__;
   var s = pdoc.createElement('script');
   s.textContent = __PARENT_SCRIPT__;
   pdoc.body.appendChild(s);

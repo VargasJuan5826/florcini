@@ -56,9 +56,9 @@ SI_ICONS = ["😎", "🎮", "🕹️", "🔥", "👾", "😂"]
 TITLE = "Flora"
 SUBTITLE = "// matchmaking: casual_party.lobby"
 
-# Música de fondo: ID del video de YouTube solicitado (https://youtu.be/odouCACH9-w?t=1704)
+# Música de fondo: ID del video de YouTube solicitado (https://youtu.be/odouCACH9-w?t=1714)
 MUSIC_VIDEO_ID = "odouCACH9-w"
-MUSIC_START_SECONDS = 1704
+MUSIC_START_SECONDS = 1714
 
 DAY_NAMES = ["D", "L", "M", "X", "J", "V", "S"]
 MONTH_NAMES = [
