@@ -1,7 +1,9 @@
 """Textos, preguntas y assets para el plancito con Flora."""
 
+RANK_SEASON = "Temporada 1"
 RANK_TITLE = "Rango Actual :"
-RANK_NAME = "Conocido 1"
+RANK_NAME = "Conocido I"
+RANK_HINT = "Elegí una misión para ganar experiencia"
 BASE_EXP = 35
 RANK_ICON = "bronce-1.jpg"
 
@@ -11,25 +13,25 @@ QUESTIONS = [
         "tag": "// misión: seleccionar_plan.cfg",
         "text": "🎮 ¿Qué plan sale para coordinar?",
         "options": [
-            "🚶 Salir a caminar  +20 pts",
-            "🍻 Salir a tomar algo  +30 pts",
-            "🎬 Ir al IMAX a ver Resident Evil (entre el 17 y 20 de septiembre)  +50 pts",
+            "🚶 Salir a caminar  +20 XP",
+            "🍻 Salir a tomar algo  +30 XP",
+            "🎬 Ir al IMAX a ver Resident Evil (entre el 17 y 20 de septiembre)  +50 XP",
         ],
     },
 ]
 
-# Puntos de EXP por cada opción
+# Puntos de XP por cada opción
 PLAN_POINTS = {
-    "🚶 Salir a caminar  +20 pts": 20,
-    "🍻 Salir a tomar algo  +30 pts": 30,
-    "🎬 Ir al IMAX a ver Resident Evil (entre el 17 y 20 de septiembre)  +50 pts": 50,
+    "🚶 Salir a caminar  +20 XP": 20,
+    "🍻 Salir a tomar algo  +30 XP": 30,
+    "🎬 Ir al IMAX a ver Resident Evil (entre el 17 y 20 de septiembre)  +50 XP": 50,
 }
 
 # Mapa de imagen según opción elegida (todas al mismo tamaño)
 PLAN_IMAGES = {
-    "🚶 Salir a caminar  +20 pts": "cj-caminando.jpg",
-    "🍻 Salir a tomar algo  +30 pts": "michi-tomando.jfif",
-    "🎬 Ir al IMAX a ver Resident Evil (entre el 17 y 20 de septiembre)  +50 pts": "gato-ada-wong.jpg",
+    "🚶 Salir a caminar  +20 XP": "cj-caminando.jpg",
+    "🍻 Salir a tomar algo  +30 XP": "michi-tomando.jfif",
+    "🎬 Ir al IMAX a ver Resident Evil (entre el 17 y 20 de septiembre)  +50 XP": "gato-ada-wong.jpg",
 }
 
 QUESTION_HEADER_IMAGES = {

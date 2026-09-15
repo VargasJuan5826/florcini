@@ -215,28 +215,41 @@ BLOCKS = """
 
 /* HUD Rango Gamer */
 .gamer-rank-card {
+  display: flex; flex-direction: column;
+  background: linear-gradient(145deg, #181438 0%, #0f0c26 100%);
+  border: 2px solid #4338ca; border-radius: 18px;
+  padding: 12px 16px; max-width: 420px; margin: 14px auto 0 auto;
+  box-shadow: 0 6px 24px rgba(67, 56, 202, 0.25), 0 0 12px rgba(124, 58, 237, 0.15);
+  text-align: left;
+}
+.rank-season-tag {
+  font-family: var(--mono); font-size: 10px; font-weight: 800;
+  color: #a5b4fc; text-transform: uppercase; letter-spacing: 1px;
+  margin-bottom: 8px; border-bottom: 1px solid rgba(165, 180, 252, 0.15);
+  padding-bottom: 4px;
+}
+.rank-card-body {
   display: flex; align-items: center; gap: 12px;
-  background: #ffffff; border: 2px solid #ede9fe; border-radius: 16px;
-  padding: 10px 16px; max-width: 380px; margin: 14px auto 0 auto;
-  box-shadow: 0 4px 16px rgba(124,58,237,0.10); text-align: left;
 }
 .rank-badge-wrap {
-  width: 44px; height: 44px; border-radius: 10px; overflow: hidden;
-  background: #1e1b4b; border: 2px solid #7c3aed; flex-shrink: 0;
+  width: 48px; height: 48px; border-radius: 12px; overflow: hidden;
+  background: #0f0c26; border: 2px solid #818cf8; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 2px 8px rgba(124,58,237,0.3);
+  box-shadow: 0 0 12px rgba(129, 140, 248, 0.4);
 }
 .rank-badge-wrap img { width: 100%; height: 100%; object-fit: cover; }
 .rank-details { flex: 1; min-width: 0; }
 .rank-header-line { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px; }
-.rank-title-label { font-family: var(--mono); font-size: 11px; font-weight: 800; color: #7c3aed; text-transform: uppercase; letter-spacing: 0.5px; }
-.rank-name-value { font-family: var(--sans); font-size: 14px; font-weight: 900; color: #1e1b4b; margin-left: 6px; }
-.rank-bar-bg { height: 8px; background: #ede9fe; border-radius: 999px; overflow: hidden; margin-bottom: 3px; }
-.rank-bar-fill { height: 100%; background: linear-gradient(90deg, #a78bfa, #7c3aed); border-radius: 999px; transition: width 0.4s ease; }
+.rank-title-label { font-family: var(--mono); font-size: 10px; font-weight: 800; color: #c7d2fe; text-transform: uppercase; letter-spacing: 0.5px; }
+.rank-name-value { font-family: var(--sans); font-size: 15px; font-weight: 900; color: #ffffff; text-shadow: 0 0 8px rgba(255,255,255,0.2); }
+.rank-bar-bg { height: 9px; background: #1e1b4b; border: 1px solid #3730a3; border-radius: 999px; overflow: hidden; margin-bottom: 4px; }
+.rank-bar-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #a855f7, #ec4899); border-radius: 999px; transition: width 0.4s ease; box-shadow: 0 0 8px rgba(168, 85, 247, 0.5); }
 .rank-bar-fill.animated-fill {
   animation: fillExp 1.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
-.rank-percent-label { font-family: var(--mono); font-size: 10px; color: #6b7280; font-weight: 700; text-align: right; }
+.rank-footer-line { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.rank-hint-label { font-family: var(--sans); font-size: 9.5px; color: #94a3b8; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rank-percent-label { font-family: var(--mono); font-size: 11px; color: #38bdf8; font-weight: 800; text-align: right; flex-shrink: 0; text-shadow: 0 0 6px rgba(56,189,248,0.4); }
 
 .exp-levelup-badge {
   display: inline-block;

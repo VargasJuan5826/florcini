@@ -32,7 +32,7 @@ def header() -> str:
     if is_animated:
         bonus_badge = f"""
         <div class="exp-levelup-badge">
-          ✨ ¡+{earned} PTS EXP GANADOS! (Progreso subió a {curr_exp}%) 🎮
+          ✨ ¡+{earned} XP GANADOS! (Progreso subió a {curr_exp} / 100 XP) 🎮
         </div>
         """
 
@@ -42,18 +42,24 @@ def header() -> str:
           <div class="flora-title">{content.TITLE}</div>
           <div class="flora-sub">{content.SUBTITLE}</div>
           <div class="gamer-rank-card">
-            <div class="rank-badge-wrap">
-              <img src="{assets.url(content.RANK_ICON)}" alt="{content.RANK_NAME}">
-            </div>
-            <div class="rank-details">
-              <div class="rank-header-line">
-                <span class="rank-title-label">{content.RANK_TITLE}</span>
-                <span class="rank-name-value">{content.RANK_NAME}</span>
+            <div class="rank-season-tag">🎮 {content.RANK_SEASON}</div>
+            <div class="rank-card-body">
+              <div class="rank-badge-wrap">
+                <img src="{assets.url(content.RANK_ICON)}" alt="{content.RANK_NAME}">
               </div>
-              <div class="rank-bar-bg">
-                <div class="{fill_class}" style="--prev-w: {prev_exp}%; --curr-w: {curr_exp}%; width: {curr_exp}%;"></div>
+              <div class="rank-details">
+                <div class="rank-header-line">
+                  <span class="rank-title-label">{content.RANK_TITLE}</span>
+                  <span class="rank-name-value">{content.RANK_NAME}</span>
+                </div>
+                <div class="rank-bar-bg">
+                  <div class="{fill_class}" style="--prev-w: {prev_exp}%; --curr-w: {curr_exp}%; width: {curr_exp}%;"></div>
+                </div>
+                <div class="rank-footer-line">
+                  <span class="rank-hint-label">💡 {content.RANK_HINT}</span>
+                  <span class="rank-percent-label">{curr_exp} / 100 XP</span>
+                </div>
               </div>
-              <div class="rank-percent-label">{curr_exp}% EXP</div>
             </div>
           </div>
           {bonus_badge}

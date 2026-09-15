@@ -98,7 +98,7 @@ def go(from_step: int, to_step: int) -> None:
         st.session_state.prev_exp = content.BASE_EXP
         st.session_state.earned_exp = pts
         st.session_state.current_exp = content.BASE_EXP + pts
-        st.session_state.answers["rank"] = f"{content.RANK_NAME} ({st.session_state.current_exp}% EXP)"
+        st.session_state.answers["rank"] = f"{content.RANK_NAME} ({st.session_state.current_exp}/100 XP)"
     st.session_state.step = to_step
 
 
@@ -110,7 +110,7 @@ def pick(step: int, value: str) -> None:
 def say_yes() -> None:
     st.session_state.answers[1] = "¡De una! 😎"
     st.session_state.current_exp = content.BASE_EXP
-    st.session_state.answers["rank"] = f"{content.RANK_NAME} ({content.BASE_EXP}% EXP)"
+    st.session_state.answers["rank"] = f"{content.RANK_NAME} ({content.BASE_EXP}/100 XP)"
     go(1, 2)
 
 
