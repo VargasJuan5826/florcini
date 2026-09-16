@@ -30,9 +30,26 @@ _PARENT_SCRIPT = r"""
     PLAYLIST = [{ id: "odouCACH9-w", start: 1714, title: "Eurodance Nostalgia" }];
   }
 
-  // Cada vez que se abre la app, se elige un tema al azar
+  function getTrackStart(track) {
+    if (!track) return 0;
+    if (typeof track.min_start === 'number' && typeof track.max_start === 'number') {
+      var min = Math.min(track.min_start, track.max_start);
+      var max = Math.max(track.min_start, track.max_start);
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    if (Array.isArray(track.starts) && track.starts.length > 0) {
+      return track.starts[Math.floor(Math.random() * track.starts.length)];
+    }
+    if (typeof track.start === 'number') {
+      return track.start;
+    }
+    return 0;
+  }
+
+  // Cada vez que se abre la app, se elige un tema al azar e inicia en un segundo aleatorio
   var currentIndex = Math.floor(Math.random() * PLAYLIST.length);
   var currentTrack = PLAYLIST[currentIndex];
+  var initialStart = getTrackStart(currentTrack);
 
   var state = {
     ready: false,
@@ -144,11 +161,12 @@ _PARENT_SCRIPT = r"""
     state.currentIndex = currentIndex;
     seek.value = 0;
     curEl.textContent = '0:00';
+    var startSec = getTrackStart(currentTrack);
     if (state.player && typeof state.player.loadVideoById === 'function') {
       try {
         state.player.loadVideoById({
           videoId: currentTrack.id,
-          startSeconds: currentTrack.start || 0
+          startSeconds: startSec
         });
         state.player.playVideo();
         state.player.unMute();
@@ -236,14 +254,14 @@ _PARENT_SCRIPT = r"""
         rel: 0,
         fs: 0,
         disablekb: 1,
-        start: currentTrack.start || 0,
+        start: initialStart,
         origin: window.location.origin
       },
       events: {
         onReady: function () {
           state.ready = true;
-          if (currentTrack.start > 0) {
-            try { state.player.seekTo(currentTrack.start, true); } catch (e) {}
+          if (initialStart > 0) {
+            try { state.player.seekTo(initialStart, true); } catch (e) {}
           }
           // Reproducir inmediatamente
           try {
@@ -270,7 +288,8 @@ _PARENT_SCRIPT = r"""
               nextTrack();
             } else {
               try {
-                ev.target.seekTo(currentTrack.start || 0, true);
+                var loopStart = getTrackStart(currentTrack);
+                ev.target.seekTo(loopStart, true);
                 ev.target.playVideo();
               } catch (e) {}
             }
@@ -304,7 +323,7 @@ _BOOTSTRAP = r"""
   try { pdoc = window.parent.document; pwin = window.parent; } catch (e) { return; }
   if (!pdoc || !pdoc.body) return;
 
-  var SCRIPT_VER = 6;
+  var SCRIPT_VER = 7;
   if (pwin.__floraMusicInjected && pwin.__floraMusicVersion === SCRIPT_VER) {
     if (pwin.__floraMusic && pwin.__floraMusic.player && typeof pwin.__floraMusic.player.playVideo === 'function') {
       try {
