@@ -103,6 +103,11 @@ _PARENT_SCRIPT = r"""
   var curEl = document.getElementById('flora-music-cur');
   var durEl = document.getElementById('flora-music-dur');
 
+  if (PLAYLIST.length <= 1) {
+    if (prevBtn) prevBtn.style.display = 'none';
+    if (nextBtn) nextBtn.style.display = 'none';
+  }
+
   function fmt(s) {
     s = Math.max(0, Math.floor(s || 0));
     var m = Math.floor(s / 60);
@@ -118,7 +123,7 @@ _PARENT_SCRIPT = r"""
     try {
       state.player.playVideo();
       state.player.unMute();
-      state.player.setVolume(50);
+      state.player.setVolume(30);
       state.started = true;
       state.muted = false;
       muteBtn.textContent = '🔊';
@@ -147,6 +152,7 @@ _PARENT_SCRIPT = r"""
         });
         state.player.playVideo();
         state.player.unMute();
+        state.player.setVolume(30);
       } catch (e) {}
     }
   }
@@ -206,7 +212,7 @@ _PARENT_SCRIPT = r"""
     if (!state.player) return;
     try {
       state.player.unMute();
-      state.player.setVolume(50);
+      state.player.setVolume(30);
       state.player.playVideo();
       state.muted = false;
       muteBtn.textContent = '🔊';
@@ -246,7 +252,7 @@ _PARENT_SCRIPT = r"""
           // Intentar desmutear de una
           try {
             state.player.unMute();
-            state.player.setVolume(50);
+            state.player.setVolume(30);
             if (!state.player.isMuted()) {
               state.muted = false;
               muteBtn.textContent = '🔊';
@@ -260,8 +266,14 @@ _PARENT_SCRIPT = r"""
           } else if (ev.data === window.YT.PlayerState.PAUSED) {
             playBtn.textContent = '▶';
           } else if (ev.data === window.YT.PlayerState.ENDED) {
-            // Al terminar el tema, salta automáticamente al siguiente
-            nextTrack();
+            if (PLAYLIST.length > 1) {
+              nextTrack();
+            } else {
+              try {
+                ev.target.seekTo(currentTrack.start || 0, true);
+                ev.target.playVideo();
+              } catch (e) {}
+            }
           }
         }
       }
@@ -292,7 +304,7 @@ _BOOTSTRAP = r"""
   try { pdoc = window.parent.document; pwin = window.parent; } catch (e) { return; }
   if (!pdoc || !pdoc.body) return;
 
-  var SCRIPT_VER = 5;
+  var SCRIPT_VER = 6;
   if (pwin.__floraMusicInjected && pwin.__floraMusicVersion === SCRIPT_VER) {
     if (pwin.__floraMusic && pwin.__floraMusic.player && typeof pwin.__floraMusic.player.playVideo === 'function') {
       try {

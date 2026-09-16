@@ -56,18 +56,13 @@ SI_ICONS = ["😎", "🎮", "🕹️", "🔥", "👾", "😂"]
 TITLE = "Flora"
 SUBTITLE = "// matchmaking: casual_party.lobby"
 
-# Playlist de fondo: cada vez que se abre la página, se reproduce uno distinto al azar.
-# Podés agregar todos los videos que quieras especificando su id y segundo de inicio.
+# Playlist de fondo: actualmente con 1 tema.
+# Podés agregar más videos cuando quieras con su id y segundo de inicio.
 PLAYLIST = [
     {
         "id": "odouCACH9-w",
         "start": 1714,
         "title": "Eurodance Nostalgia",
-    },
-    {
-        "id": "7vG4knGrP9w",
-        "start": 742,
-        "title": "Gaming Beats Mix",
     },
 ]
 
