@@ -8,7 +8,7 @@ Propuesta de plancito casual interactiva con michis en Streamlit.
 - 🕹️ **Opciones de Plancito con Puntos de EXP**:
   - 🚶 Salir a caminar +20 pts
   - 🍻 Salir a tomar algo +30 pts
-  - 🎬 Ir al IMAX a ver Resident Evil +50 pts
+  - 🎬 Ir a ver Resident Evil (IMAX o CinePY) +50 pts
 - 🐱 **Memes de michis adaptados** sin recortes ni saltos de interfaz.
 - 🎵 **Música de fondo**: Sincronizada automáticamente desde YouTube.
 - 📅 **Selector interactivo de fecha y hora**.

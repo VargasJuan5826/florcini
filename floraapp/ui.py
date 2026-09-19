@@ -114,7 +114,7 @@ def step2_intro(chosen_plan: str | None = None) -> str:
     img_name = content.PLAN_IMAGES.get(chosen_plan, "fin-de-semana.jfif")
     is_resident_evil = chosen_plan and "resident evil" in chosen_plan.lower()
     tip_html = (
-        '<div class="re-tip">// 🎬 disponible en IMAX entre el 17 y 20 de septiembre</div>'
+        '<div class="re-tip">// 🎬 disponible en IMAX o CinePY</div>'
         if is_resident_evil
         else ""
     )

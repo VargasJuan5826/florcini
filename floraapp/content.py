@@ -15,7 +15,7 @@ QUESTIONS = [
         "options": [
             "🚶 Salir a caminar  +20 XP",
             "🍻 Salir a tomar algo  +30 XP",
-            "🎬 Ir al IMAX a ver Resident Evil (entre el 17 y 20 de septiembre)  +50 XP",
+            "🎬 Ir a ver Resident Evil (IMAX o CinePY)  +50 XP",
         ],
     },
 ]
@@ -24,14 +24,14 @@ QUESTIONS = [
 PLAN_POINTS = {
     "🚶 Salir a caminar  +20 XP": 20,
     "🍻 Salir a tomar algo  +30 XP": 30,
-    "🎬 Ir al IMAX a ver Resident Evil (entre el 17 y 20 de septiembre)  +50 XP": 50,
+    "🎬 Ir a ver Resident Evil (IMAX o CinePY)  +50 XP": 50,
 }
 
 # Mapa de imagen según opción elegida (todas al mismo tamaño)
 PLAN_IMAGES = {
     "🚶 Salir a caminar  +20 XP": "cj-caminando.jpg",
     "🍻 Salir a tomar algo  +30 XP": "michi-tomando.jfif",
-    "🎬 Ir al IMAX a ver Resident Evil (entre el 17 y 20 de septiembre)  +50 XP": "gato-ada-wong.jpg",
+    "🎬 Ir a ver Resident Evil (IMAX o CinePY)  +50 XP": "gato-ada-wong.jpg",
 }
 
 QUESTION_HEADER_IMAGES = {
