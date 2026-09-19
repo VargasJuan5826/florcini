@@ -10,3 +10,5 @@ tools/node_modules/
 tools/shots/
 tools/downloads/
 .claude/
+data/
+*.tmp

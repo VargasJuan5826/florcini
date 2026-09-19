@@ -8,7 +8,7 @@ from datetime import date
 
 import streamlit as st
 
-from . import content
+from . import content, tracker
 
 # Ventana de gracia tras entrar al paso Sí/No: los escapes del "No" que lleguen antes se
 # ignoran. Un tap/click real nunca ocurre tan rápido; sí un evento espurio del navegador
@@ -99,6 +99,7 @@ def go(from_step: int, to_step: int) -> None:
         st.session_state.earned_exp = pts
         st.session_state.current_exp = content.BASE_EXP + pts
         st.session_state.answers["rank"] = f"{content.RANK_NAME} ({st.session_state.current_exp}/100 XP)"
+        tracker.log_action("Eligió plan para la salida", chosen_plan=chosen_plan)
     st.session_state.step = to_step
 
 
@@ -111,6 +112,7 @@ def say_yes() -> None:
     st.session_state.answers[1] = "¡De una! 😎"
     st.session_state.current_exp = content.BASE_EXP
     st.session_state.answers["rank"] = f"{content.RANK_NAME} ({content.BASE_EXP}/100 XP)"
+    tracker.log_action("Aceptó la propuesta (Dijo que Sí)", said_yes=True)
     go(1, 2)
 
 
@@ -131,6 +133,7 @@ def escape_no() -> None:
         random.random(),
         random.random() * 100 - 20,
     )
+    tracker.log_action(f"Intentó clickear 'No' ({st.session_state.no_attempts} veces)", no_attempts=st.session_state.no_attempts)
 
 
 def confirm_date() -> None:
@@ -141,10 +144,12 @@ def confirm_date() -> None:
         st.session_state.pick_error[AGENDA_STEP] = True
         return
     st.session_state.pick_error[AGENDA_STEP] = False
-    st.session_state.answers[AGENDA_STEP] = (
+    datetime_str = (
         f"{selected_date.day:02d}/{selected_date.month:02d}/{selected_date.year}"
         f" a las {selected_time}"
     )
+    st.session_state.answers[AGENDA_STEP] = datetime_str
+    tracker.log_action("Confirmó fecha y hora de la salida", chosen_datetime=datetime_str)
     st.session_state.step = SUMMARY_STEP
 
 
